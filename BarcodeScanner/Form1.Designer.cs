@@ -36,7 +36,7 @@
             // 
             this.StartButton.Location = new System.Drawing.Point(39, 44);
             this.StartButton.Name = "StartButton";
-            this.StartButton.Size = new System.Drawing.Size(75, 30);
+            this.StartButton.Size = new System.Drawing.Size(98, 79);
             this.StartButton.TabIndex = 0;
             this.StartButton.Text = "Start";
             this.StartButton.UseVisualStyleBackColor = true;
@@ -44,9 +44,9 @@
             // 
             // StopButton
             // 
-            this.StopButton.Location = new System.Drawing.Point(143, 48);
+            this.StopButton.Location = new System.Drawing.Point(193, 44);
             this.StopButton.Name = "StopButton";
-            this.StopButton.Size = new System.Drawing.Size(82, 26);
+            this.StopButton.Size = new System.Drawing.Size(105, 79);
             this.StopButton.TabIndex = 1;
             this.StopButton.Text = "Stop";
             this.StopButton.UseVisualStyleBackColor = true;

@@ -27,6 +27,7 @@ namespace BarcodeScanner
 
         public AsynchronousSocketListener()
         {
+
         }
 
         public static void StartListening()
@@ -49,7 +50,7 @@ namespace BarcodeScanner
 
             if (ipAddress == null) return;
 
-            IPEndPoint localEndPoint = new IPEndPoint(ipAddress, 8080);
+            IPEndPoint localEndPoint = new IPEndPoint(ipAddress, 8081);
 
             Socket listener = new Socket(ipAddress.AddressFamily,SocketType.Stream, ProtocolType.Tcp);
 
@@ -98,7 +99,6 @@ namespace BarcodeScanner
 
             if (bytesRead > 0)
             {
-
                 state.sb.Append(Encoding.UTF8.GetString(state.buffer, 0, bytesRead));
                 content = state.sb.ToString();
                 if (content.IndexOf("}]") > -1)
@@ -119,20 +119,16 @@ namespace BarcodeScanner
                 else
                 {
                     // Not all data received. Get more.  
-                    handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
-                    new AsyncCallback(ReadCallback), state);
+                    handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0, new AsyncCallback(ReadCallback), state);
                 }
             }
         }
 
         private static void Send(Socket handler, String data)
         {
-            // Convert the string data to byte data using ASCII encoding.  
             byte[] byteData = Encoding.UTF8.GetBytes(data);
 
-            // Begin sending the data to the remote device.  
-            handler.BeginSend(byteData, 0, byteData.Length, 0,
-                new AsyncCallback(SendCallback), handler);
+            handler.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), handler);
         }
 
         private static void SendCallback(IAsyncResult ar)

@@ -28,7 +28,9 @@ namespace BarcodeScanner
 
         private void StartButton_Click(object sender, EventArgs e)
         {
-            Task.Factory.StartNew(()=> AsynchronousSocketListener.StartListening());
+            Console.WriteLine("Start");
+            //Task.Factory.StartNew(()=> AsynchronousSocketListener.StartListening());
+            Task.Factory.StartNew(() => SynchronousSocketListener.StartListening());            
         }
 
         private void StopButton_Click(object sender, EventArgs e)
