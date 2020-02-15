@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Linq;
 
 namespace BarcodeScanner
 {
@@ -18,6 +19,8 @@ namespace BarcodeScanner
         public byte[] buffer = new byte[BufferSize];
         // Received data string.  
         public StringBuilder sb = new StringBuilder();
+
+        public List<byte[]> listBuffer = new List<byte[]>();
     }
 
     public class AsynchronousSocketListener
@@ -99,18 +102,42 @@ namespace BarcodeScanner
 
             if (bytesRead > 0)
             {
+                byte[] tmpBuffer = new byte[bytesRead];
+                Buffer.BlockCopy(state.buffer, 0, tmpBuffer, 0, bytesRead);
+                Console.WriteLine(state.buffer.Length);
+                state.listBuffer.Add(tmpBuffer);
+
                 state.sb.Append(Encoding.UTF8.GetString(state.buffer, 0, bytesRead));
                 content = state.sb.ToString();
-                if (content.IndexOf("}]") > -1)
+                if (content.IndexOf("\n  }\n]") > -1)
                 {
-                    Console.WriteLine("Read {0} bytes from socket.\n Data : {1}", content.Length, content);
+                    //Console.WriteLine("Read {0} bytes from socket.\n Data : {1}", content.Length, content);
+
+                    int totalLength = state.listBuffer.Sum<byte[]>(buffer => buffer.Length);
+                    byte[] fullBuffer = new byte[totalLength];
+
+                    int insertPosition = 0;
+                    foreach (byte[] buffer in state.listBuffer)
+                    {
+                        buffer.CopyTo(fullBuffer, insertPosition);
+                        insertPosition += buffer.Length;
+                    }
+
+                    state.sb.Clear();
+                    //state.sb.Append(Encoding.UTF8.GetString(fullBuffer, 0, fullBuffer.Length));
+                    content = Encoding.UTF8.GetString(fullBuffer, 0, fullBuffer.Length);
 
                     List<EmpModel> lst = new List<EmpModel>();
-                    lst = JsonConvert.DeserializeObject<List<EmpModel>>(content);
+
+                    JsonSerializerSettings js = new JsonSerializerSettings();
+                    js.Formatting = Formatting.Indented;
+                    lst = JsonConvert.DeserializeObject<List<EmpModel>>(content, js);
 
                     foreach (var item in lst)
                     {
-                        Console.WriteLine(string.Format("{0}, {1}",item.EmpId, item.EmpName));
+                        string binaryString = string.Empty;
+                       
+                        Console.WriteLine(string.Format("{0}, {1}",item.EmpId, ByteToString(item.EmpName)));
                     }
 
                     //Send(handler, content);
@@ -123,6 +150,31 @@ namespace BarcodeScanner
                 }
             }
         }
+
+        private static string ByteToString(byte[] response)
+        {
+            string binaryString = string.Empty;
+            foreach (byte b in response)
+            {
+                // byte를 2진수 문자열로 변경
+                string s = Convert.ToString(b, 2);
+                binaryString += s.PadLeft(8, '0');
+            }
+
+            int nbytes = binaryString.Length / 8;
+            byte[] outBytes = new byte[nbytes];
+
+            for (int i = 0; i < nbytes; i++)
+            {
+                // 8자리 숫자 즉 1바이트 문자열 얻기
+                string binStr = binaryString.Substring(i * 8, 8);
+                // 2진수 문자열을 숫자로 변경
+                outBytes[i] = (byte)Convert.ToInt32(binStr, 2);
+            }
+            
+            return Encoding.UTF8.GetString(outBytes);
+        }
+
 
         private static void Send(Socket handler, String data)
         {

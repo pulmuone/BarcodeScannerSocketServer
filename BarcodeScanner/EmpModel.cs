@@ -9,6 +9,6 @@ namespace BarcodeScanner
     public class EmpModel
     {
         public string EmpId { get; set; }
-        public string EmpName { get; set; }
+        public byte[] EmpName { get; set; }
     }
 }
