@@ -1,10 +1,11 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-
+using System.Threading;
 
 namespace BarcodeScanner
 {
@@ -19,10 +20,21 @@ namespace BarcodeScanner
         {
             byte[] bytes = new Byte[1024];
             IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
-            IPAddress ipAddress = ipHostInfo.AddressList[0];
-            IPEndPoint localEndPoint = new IPEndPoint(ipAddress, 8081);
 
-            Socket listener = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            foreach (var item in ipHostInfo.AddressList)
+            {
+
+                if (item.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    Debug.WriteLine(item);
+                }
+            }
+
+            //IPAddress ipAddress = ipHostInfo.AddressList[0];
+
+            IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, 7000);
+            
+            Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             
             try
             {
@@ -62,8 +74,10 @@ namespace BarcodeScanner
                     }
 
                     // Echo the data back to the client.  
-                    byte[] msg = Encoding.UTF8.GetBytes("OK");
+                    //byte[] msg = Encoding.UTF8.GetBytes("OK");
+                    byte[] msg = Encoding.UTF8.GetBytes(content);
 
+                    Thread.Sleep(5000);
                     handler.Send(msg);
                     handler.Shutdown(SocketShutdown.Both);
                     handler.Close();
